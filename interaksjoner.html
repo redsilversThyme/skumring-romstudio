@@ -1,21 +1,192 @@
 <!doctype html>
-<html lang="nb"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Skumring – tre karakterer · interaksjonstest</title>
+<html lang="nb"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Skumring – to karakterer sammen · interaksjonstest</title>
 <meta name="theme-color" content="#18271d">
 <style>
-:root{color-scheme:dark;font:14px system-ui,Segoe UI,sans-serif;color:#eef2e9;background:#101914}*{box-sizing:border-box}body{margin:0;height:100vh;display:flex;flex-direction:column;overflow:hidden}header{background:#22352a;border-bottom:1px solid #405b49;padding:10px 15px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}h1{margin:0;font-size:17px;font-weight:650}a{color:#c9dcb7;text-decoration:none}a:hover{text-decoration:underline}.small{font-size:12px;color:#a9bfaf}main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 282px}#stage{position:relative;min-height:0;background:radial-gradient(ellipse,#263b2d,#101914);overflow:hidden}#stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}#three-canvas{display:none}#hud{position:absolute;left:12px;top:12px;background:#14241edb;padding:8px 11px;border:1px solid #47604d;border-radius:7px;font-size:12px;max-width:70%;white-space:pre-line;pointer-events:none}aside{background:#1c2e23;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;border-left:1px solid #44604d}.block{background:#263a2c;border:1px solid #4a6651;border-radius:8px;padding:11px;display:flex;flex-direction:column;gap:8px}label{font-size:12px;color:#bed1bd}select,button{font:inherit;color:#f0f4ec;background:#33533f;border:1px solid #6c876f;border-radius:7px;padding:10px 11px;cursor:pointer}button:hover{background:#43644b}button:disabled{opacity:.5;cursor:not-allowed}button.primary{background:#a5c498;color:#172b1b;font-weight:700}button.primary:hover{background:#c1d9b6}select{width:100%;background:#192b20}.row{display:flex;gap:6px}.row button{flex:1}.stat{min-height:42px;line-height:1.5;color:#d1ddd1;font-size:13px}#people{font-size:12px;line-height:1.85}#people .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}footer{font-size:12px;background:#203426;padding:8px 14px;color:#b5c5b5;border-top:1px solid #3c5340}@media(max-width:800px){body{height:100dvh}main{display:flex;flex-direction:column}#stage{height:54%;min-height:280px;flex:1}aside{height:46%;min-height:250px;display:block}aside .block{margin-bottom:10px}header{gap:7px}h1{font-size:15px}}@media(prefers-reduced-motion:reduce){button{transition:none}}
+:root{color-scheme:dark;font:14px system-ui,Segoe UI,sans-serif;color:#eef2e9;background:#101914}*{box-sizing:border-box}body{margin:0;height:100vh;display:flex;flex-direction:column;overflow:hidden}header{background:#22352a;border-bottom:1px solid #405b49;padding:10px 15px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}h1{margin:0;font-size:17px;font-weight:650}a{color:#c9dcb7;text-decoration:none}a:hover{text-decoration:underline}.small{font-size:12px;color:#a9bfaf}main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 282px}#stage{position:relative;min-height:0;background:radial-gradient(ellipse,#263b2d,#101914);overflow:hidden}#stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}#three-canvas{display:none}#hud{position:absolute;left:12px;top:12px;background:#14241edb;padding:8px 11px;border:1px solid #47604d;border-radius:7px;font-size:12px;max-width:70%;white-space:pre-line;pointer-events:none}aside{background:#1c2e23;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;border-left:1px solid #44604d}.block{background:#263a2c;border:1px solid #4a6651;border-radius:8px;padding:11px;display:flex;flex-direction:column;gap:8px}label{font-size:12px;color:#bed1bd}select,button{font:inherit;color:#f0f4ec;background:#33533f;border:1px solid #6c876f;border-radius:7px;padding:10px 11px;cursor:pointer}button:hover{background:#43644b}button:disabled{opacity:.5;cursor:not-allowed}button.primary{background:#a5c498;color:#172b1b;font-weight:700}button.primary:hover{background:#c1d9b6}select{width:100%;background:#192b20}.row{display:flex;gap:6px}.row button{flex:1}.stat{min-height:42px;line-height:1.5;color:#d1ddd1;font-size:13px}#people{font-size:12px;line-height:1.85}.pairSelect{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}#people .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}footer{font-size:12px;background:#203426;padding:8px 14px;color:#b5c5b5;border-top:1px solid #3c5340}@media(max-width:800px){body{height:100dvh}main{display:flex;flex-direction:column}#stage{height:54%;min-height:280px;flex:1}aside{height:46%;min-height:250px;display:block}aside .block{margin-bottom:10px}header{gap:7px}h1{font-size:15px}}@media(prefers-reduced-motion:reduce){button{transition:none}}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"}}</script>
 </head><body>
-<header><h1>Skumring · Karakterinteraksjoner v3.1</h1><a href="./">← Til rommet</a><a href="animation.html">Gå-/løpeanimasjoner</a><span class="small">3 figurer · seng · stol</span></header>
+<header><h1>Skumring · Karakterinteraksjoner v3.2</h1><a href="./">← Til rommet</a><a href="animation.html">Gå-/løpeanimasjoner</a><span class="small">3 figurer · velg 2 sammen · seng · stol</span></header>
 <main><div id="stage"><canvas id="fallback" aria-label="Plantegning med tre bevegelige figurer"></canvas><canvas id="three-canvas" aria-label="3D-rom med tre bevegelige figurer"></canvas><div id="hud" role="status">Starter interaksjonstesten …</div></div>
 <aside>
   <div class="block"><label for="character">Velg karakter</label><select id="character"><option value="0">Ava</option><option value="1">Victoria</option><option value="2">Karakter 3</option></select><div id="selectedState" class="stat">Klar til å gå</div></div>
   <div class="block"><label>Bevegelse og møbler</label><button class="primary" id="sit">Gå til stolen og sett deg</button><button class="primary" id="lie">Gå til sengen og legg deg</button><div class="row"><button id="rise">Reis deg</button><button id="reset">Til start</button></div><label for="speed">Ganghastighet: <span id="speedVal">1,35 m/s</span></label><input type="range" id="speed" min="0.65" max="2.2" step="0.05" value="1.35"/></div>
+  <div class="block" id="duo"><label>To karakterer sammen</label>
+   <div class="row"><div class="pairSelect"><label for="pairA">Første</label><select id="pairA"><option value="0">Ava</option><option value="1">Victoria</option><option value="2">Karakter 3</option></select></div>
+   <div class="pairSelect"><label for="pairB">Andre</label><select id="pairB"><option value="1">Victoria</option><option value="0">Ava</option><option value="2">Karakter 3</option></select></div></div>
+   <button class="primary" id="pairMeet">Gå mot hverandre og samhandle</button>
+   <button class="primary" id="pairBed">Gå begge til sengen</button>
+   <button id="pairReset">Send begge til start</button>
+   <div class="small">De møter hverandre med avstand og øyekontakt. Sengen har to plasser, én per figur. Fra et møte kan de sendes direkte til sengen.</div>
+  </div>
   <div class="block"><label>Alle tre figurene</label><div id="people"></div><div class="row"><button id="front">Forfra</button><button id="top">Ovenfra</button><button id="orbit">Skrått</button></div><button id="resetAll">Nullstill alle</button></div>
-  <div class="block"><label>Hva testes?</label><div class="small">Gange mot møbel, vending, sette seg, legge seg og reise seg. En seng og en stol kan brukes av én karakter om gangen. Dette er foreløpig en visuell test med enkle testfigurer – ikke ferdige skjelettanimasjoner eller kollisjoner i Unreal.</div></div>
+  <div class="block"><label>Hva testes?</label><div class="small">Gange mot møbel, vending, sette seg, legge seg og reise seg. Stolen har én plass; sengen har to. To figurer kan møtes, bevege armene og se på hverandre, eller legge seg på hver sin side av sengen. Visuell prototype med testfigurer – ikke ferdige skjelettanimasjoner, navigasjonsmesh eller kollisjoner i Unreal.</div></div>
 </aside></main>
 <footer>Dra med musen for å rotere · musehjul for zoom · 30 FPS på 3D-visningen. Figurene og bevegelsene rendres lokalt i nettleseren.</footer>
-<script src="room-v2.js?v=3.0"></script><script src="motion-core.js?v=3.1"></script>
+<script src="room-v2.js?v=3.0"></script><script>
+/* Skumring interaction choreography v3.2. No rendering dependencies. */
+(function (root, factory) {
+  const api=factory();
+  if(typeof module==='object'&&module.exports)module.exports=api;
+  if(root)root.SkumringMotion=api;
+})(typeof window!=='undefined'?window:null,function(){
+ 'use strict';
+ const STARTS=[
+  {name:'Ava',x:-1.70,z:.59,color:0x759b80},
+  {name:'Victoria',x:0,z:.59,color:0xb87b67},
+  {name:'Karakter 3',x:1.70,z:.59,color:0x869ac0}
+ ];
+ const TARGETS={
+  chair:{name:'stolen',staging:{x:-3.62,z:-1.76},final:{x:-3.64,z:-2.67},pose:'sit'},
+  bed:{name:'sengen',pose:'lie',slots:[
+   {staging:{x:1.62,z:-2.59},final:{x:3.12,z:-2.59}},
+   {staging:{x:1.62,z:-1.79},final:{x:3.12,z:-1.79}}
+  ]}
+ };
+ const lerp=(a,b,t)=>a+(b-a)*t;
+ const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
+ function angleTo(a,b){return Math.atan2(b.x-a.x,b.z-a.z);}
+ function shortTurn(a,b){return Math.atan2(Math.sin(b-a),Math.cos(b-a));}
+ class World{
+  constructor(){
+   this.actors=STARTS.map((p,id)=>({id,name:p.name,color:p.color,x:p.x,z:p.z,yaw:0,phase:'idle',target:null,bedSlot:null,
+    route:[],walkCycle:0,walkAmount:0,sit:0,lie:0,transition:0,from:null,to:null,partner:null,interactTime:0,message:'Klar'}));
+   this.reserved={chair:null,bed:[null,null]};
+   this.speed=1.35;
+  }
+  actor(index){return this.actors[index]||null;}
+  freeBedSlots(){return this.reserved.bed.map((a,i)=>a===null?i:-1).filter(i=>i>=0);}
+  _canMove(a){return !!a&&(a.phase==='idle'||a.phase==='interacting');}
+  _exitMeeting(a){
+   if(a.partner===null)return;
+   const other=this.actor(a.partner);
+   a.partner=null;a.interactTime=0;
+   if(a.phase==='interacting'||a.phase==='meetingWait'){a.phase='idle';a.message='Klar';}
+   if(other&&other.partner===a.id){other.partner=null;other.interactTime=0;
+    if(other.phase==='interacting'||other.phase==='meetingWait'){other.phase='idle';other.message='Klar';}
+   }
+  }
+  _startWalking(a,kind,route,slot=null,partner=null){
+   a.target=kind;a.bedSlot=slot;a.partner=partner;a.phase='walking';a.route=route.map(q=>({...q}));
+   a.transition=0;a.from=null;a.to=null;a.walkAmount=0;a.sit=0;a.lie=0;
+   a.message=kind==='meet'?'Går mot '+this.actor(partner).name:'Går til '+TARGETS[kind].name;
+  }
+  command(index,kind){
+   const a=this.actor(index);
+   if(!a)return {ok:false,message:'Ukjent karakter.'};
+   if(kind!=='chair'&&kind!=='bed')return {ok:false,message:'Ukjent møbel.'};
+   if(!this._canMove(a))return {ok:false,message:a.name+' må fullføre bevegelsen eller reise seg først.'};
+   if(kind==='chair'&&this.reserved.chair!==null&&this.reserved.chair!==index)
+    return {ok:false,message:'Stolen er allerede i bruk.'};
+   const slot=kind==='bed'?this.freeBedSlots()[0]:null;
+   if(kind==='bed'&&slot===undefined)return {ok:false,message:'Begge plassene i sengen er opptatt.'};
+   this._exitMeeting(a);
+   if(kind==='bed')this.reserved.bed[slot]=index;else this.reserved.chair=index;
+   const t=kind==='bed'?TARGETS.bed.slots[slot]:TARGETS.chair;
+   this._startWalking(a,kind,[t.staging],slot);
+   if(kind==='chair')a.route.push({...t.final});
+   return {ok:true,message:a.name+' går til '+TARGETS[kind].name+'.'};
+  }
+  commandPair(aIndex,bIndex,kind){
+   const a=this.actor(aIndex),b=this.actor(bIndex);
+   if(!a||!b||a===b)return {ok:false,message:'Velg to forskjellige karakterer.'};
+   if(kind!=='meet'&&kind!=='bed')return {ok:false,message:'Ukjent samhandling.'};
+   if(!this._canMove(a)||!this._canMove(b))return {ok:false,message:'Begge må være klare eller stå sammen før dere kan starte.'};
+   if(a.partner!==null&&a.partner!==b.id||b.partner!==null&&b.partner!==a.id)
+    return {ok:false,message:'En av karakterene er opptatt i en annen samhandling.'};
+   if(kind==='meet'){
+    if(a.phase==='interacting'&&b.phase==='interacting'&&a.partner===b.id)return {ok:true,message:a.name+' og '+b.name+' står allerede sammen.'};
+    this._exitMeeting(a);this._exitMeeting(b);
+    const middle=clamp((a.x+b.x)/2,-1.3,1.3),z=clamp((a.z+b.z)/2,-.25,1.3);
+    const first=a.x<b.x?a:b,second=first===a?b:a;
+    this._startWalking(first,'meet',[{x:middle-.53,z}],null,second.id);
+    this._startWalking(second,'meet',[{x:middle+.53,z}],null,first.id);
+    return {ok:true,message:a.name+' og '+b.name+' går mot hverandre.'};
+   }
+   const slots=this.freeBedSlots();
+   if(slots.length<2)return {ok:false,message:'Begge sengeplassene må være ledige for to karakterer.'};
+   this._exitMeeting(a);this._exitMeeting(b);
+   // Assign each actor a different half of the bed. Reservation is atomic.
+   for(const [actor,slot] of [[a,slots[0]],[b,slots[1]]]){
+    this.reserved.bed[slot]=actor.id;
+    this._startWalking(actor,'bed',[TARGETS.bed.slots[slot].staging],slot);
+   }
+   return {ok:true,message:a.name+' og '+b.name+' går til hver sin plass i sengen.'};
+  }
+  rise(index){
+   const a=this.actor(index);if(!a)return {ok:false,message:'Ukjent karakter.'};
+   if(!['sitting','lying'].includes(a.phase))return {ok:false,message:a.name+' sitter eller ligger ikke.'};
+   const t=a.target==='bed'?TARGETS.bed.slots[a.bedSlot]:TARGETS.chair;
+   a.phase='gettingUp';a.transition=0;
+   a.from={x:a.x,z:a.z,yaw:a.yaw,sit:a.sit,lie:a.lie};
+   a.to={x:t.staging.x,z:t.staging.z,yaw:0,sit:0,lie:0};
+   a.message='Reiser seg';return {ok:true,message:a.name+' reiser seg.'};
+  }
+  _release(a){
+   if(a.target==='chair'&&this.reserved.chair===a.id)this.reserved.chair=null;
+   if(a.target==='bed'&&a.bedSlot!==null&&this.reserved.bed[a.bedSlot]===a.id)this.reserved.bed[a.bedSlot]=null;
+   a.target=null;a.bedSlot=null;
+  }
+  reset(index){
+   const a=this.actor(index);if(!a)return {ok:false,message:'Ukjent karakter.'};
+   if(a.target==='meet' && a.partner!==null){
+    const other=this.actor(a.partner);
+    if(other && other.partner===a.id && ['walking','meetingWait'].includes(other.phase)){
+     other.phase='idle';other.route=[];other.target=null;other.partner=null;other.walkAmount=0;other.message='Samhandlingen ble avbrutt';
+    }
+   }
+   this._exitMeeting(a);this._release(a);
+   const sp=STARTS[index];Object.assign(a,{x:sp.x,z:sp.z,yaw:0,phase:'idle',route:[],walkAmount:0,sit:0,lie:0,transition:0,
+    from:null,to:null,partner:null,interactTime:0,message:'Klar'});
+   return {ok:true,message:a.name+' tilbake på startpunktet.'};
+  }
+  update(delta){
+   const dt=clamp(Number(delta)||0,0,.05);
+   for(const a of this.actors){
+    if(a.phase==='walking'){
+     const p=a.route[0];if(!p){this._arrived(a);continue;}
+     const dx=p.x-a.x,dz=p.z-a.z,d=Math.hypot(dx,dz),move=this.speed*dt;
+     if(d<=move+.015){a.x=p.x;a.z=p.z;a.route.shift();if(a.route.length===0)this._arrived(a);}
+     else{a.x+=dx/d*move;a.z+=dz/d*move;}
+     a.yaw+=shortTurn(a.yaw,angleTo(a,p))*Math.min(1,dt*8);
+     a.walkCycle+=dt*10;a.walkAmount=Math.min(1,a.walkAmount+dt*5);
+    }else if(a.phase==='meetingWait'){
+     a.walkAmount=Math.max(0,a.walkAmount-dt*5);
+     const b=this.actor(a.partner);
+     if(b&&b.partner===a.id&&b.phase==='meetingWait'){
+      a.phase='interacting';b.phase='interacting';a.message='Sammen med '+b.name;b.message='Sammen med '+a.name;
+      a.yaw=angleTo(a,b);b.yaw=angleTo(b,a);
+     }
+    }else if(a.phase==='interacting'){
+     const b=this.actor(a.partner);if(b){a.yaw+=shortTurn(a.yaw,angleTo(a,b))*Math.min(1,dt*8);}
+     a.interactTime+=dt;a.walkAmount=0;
+    }else if(['sittingDown','lyingDown','gettingUp'].includes(a.phase)){
+     a.transition=Math.min(1,a.transition+dt/(a.phase==='gettingUp'?1.35:1.30));
+     const v=a.transition*a.transition*(3-2*a.transition);
+     if(a.from&&a.to){a.x=lerp(a.from.x,a.to.x,v);a.z=lerp(a.from.z,a.to.z,v);
+      a.yaw=a.from.yaw+shortTurn(a.from.yaw,a.to.yaw)*v;
+      a.sit=lerp(a.from.sit,a.to.sit,v);a.lie=lerp(a.from.lie,a.to.lie,v);}
+     a.walkAmount=Math.max(0,a.walkAmount-dt*6);
+     if(a.transition>=1){if(a.phase==='gettingUp'){this._release(a);a.phase='idle';a.message='Klar';a.sit=0;a.lie=0;}
+      else{a.phase=a.phase==='sittingDown'?'sitting':'lying';a.message=a.phase==='sitting'?'Sitter i stolen':'Ligger i sengen';}}
+    }else a.walkAmount=Math.max(0,a.walkAmount-dt*6);
+    a.x=clamp(a.x,-4.20,4.20);a.z=clamp(a.z,-3.15,3.18);
+   }
+  }
+  _arrived(a){
+   if(a.target==='meet'){a.phase='meetingWait';a.walkAmount=0;a.message='Venter på '+this.actor(a.partner).name;return;}
+   const t=a.target==='bed'?TARGETS.bed.slots[a.bedSlot]:TARGETS.chair;
+   if(!t)return;
+   a.phase=a.target==='bed'?'lyingDown':'sittingDown';a.transition=0;
+   a.from={x:a.x,z:a.z,yaw:a.yaw,sit:0,lie:0};
+   a.to={x:t.final.x,z:t.final.z,yaw:0,sit:a.target==='chair'?1:0,lie:a.target==='bed'?1:0};
+   a.message=a.target==='bed'?'Legger seg':'Setter seg';
+  }
+ }
+ return {World,STARTS,TARGETS};
+});
+
+</script>
 <script>
 /* UI, deterministic motion and dependency-free top-down fallback. */
 (function(){
@@ -31,6 +202,17 @@
   }
   for(const [id,cmd] of [['sit','sit'],['lie','lie'],['rise','rise'],['reset','reset']])$(id).onclick=()=>send(cmd);
   $('character').onchange=e=>{selected=+e.target.value;refresh();};
+  const pairIds=()=>[+$('pairA').value,+$('pairB').value];
+  function sendPair(kind){
+    const [a,b]=pairIds();const result=kind==='reset'
+      ? (world.reset(a),world.reset(b),{ok:true,message:'Begge karakterene er tilbake ved start.'})
+      : world.commandPair(a,b,kind);
+    say(result.message);refresh();
+  }
+  $('pairMeet').onclick=()=>sendPair('meet');
+  $('pairBed').onclick=()=>sendPair('bed');
+  $('pairReset').onclick=()=>sendPair('reset');
+  $('pairA').onchange=refresh;$('pairB').onchange=refresh;
   $('speed').oninput=e=>{world.speed=+e.target.value;$('speedVal').textContent=world.speed.toFixed(2).replace('.',',')+' m/s';};
   $('resetAll').onclick=()=>{world.actors.forEach(a=>world.reset(a.id));say('Alle tre figurene er tilbake på startpunktene.');refresh();};
   for(const id of ['front','top','orbit'])$(id).onclick=()=>{if(rendererHook?.camera)rendererHook.camera(id);else say('2D-plantegning aktiv. 3D-kamera krever tilgang til 3D-biblioteket.');};
@@ -38,9 +220,17 @@
     const a=world.actor(selected);
     $('selectedState').textContent=a.name+' · '+a.message;
     $('people').innerHTML=world.actors.map((p,i)=>'<div><span class="dot" style="background:'+palette[i]+'"></span><strong>'+p.name+'</strong> — '+p.message+'</div>').join('');
-    $('sit').disabled=a.phase!=='idle'||(world.reserved.chair!==null&&world.reserved.chair!==selected);
-    $('lie').disabled=a.phase!=='idle'||(world.reserved.bed!==null&&world.reserved.bed!==selected);
+    $('sit').disabled=!['idle','interacting'].includes(a.phase)||(world.reserved.chair!==null&&world.reserved.chair!==selected);
+    $('lie').disabled=!['idle','interacting'].includes(a.phase)||world.freeBedSlots().length===0;
     $('rise').disabled=!['sitting','lying'].includes(a.phase);
+    const [i,j]=pairIds(),p=world.actor(i),q=world.actor(j);
+    const distinct=i!==j&&p&&q;
+    const available=x=>x&&['idle','interacting'].includes(x.phase);
+    const partnerMatch=distinct&&(p.partner===null||p.partner===j)&&(q.partner===null||q.partner===i);
+    const pairOK=distinct&&partnerMatch&&available(p)&&available(q);
+    $('pairMeet').disabled=!pairOK;
+    $('pairBed').disabled=!pairOK||world.freeBedSlots().length<2;
+    $('pairReset').disabled=!distinct;
   }
   function fallbackDraw(){
     const r=stage.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,1.4),w=Math.max(250,Math.floor(r.width*dpr)),h=Math.max(250,Math.floor(r.height*dpr));
@@ -57,7 +247,9 @@
     ctx.fillStyle='#59482f';ctx.fillRect(X(-4.0),Z(-3.02),.75*sc,.7*sc);
     ctx.fillStyle='#f0e8d9';ctx.font=Math.max(10,Math.round(12*dpr))+'px system-ui';ctx.textAlign='center';
     ctx.fillText('STOL',X(-3.64),Z(-3.18));ctx.fillText('SENG',X(3.1),Z(-2.18));
-    world.actors.forEach((a,i)=>{ctx.fillStyle=palette[i];ctx.beginPath();ctx.arc(X(a.x),Z(a.z),.22*sc,0,2*Math.PI);ctx.fill();ctx.strokeStyle='#edf2e9';ctx.lineWidth=i===selected?3:1;ctx.stroke();ctx.beginPath();ctx.moveTo(X(a.x),Z(a.z));ctx.lineTo(X(a.x+Math.sin(a.yaw)*.36),Z(a.z+Math.cos(a.yaw)*.36));ctx.stroke();ctx.fillStyle='#fff';ctx.fillText(a.name,X(a.x),Z(a.z)-.34*sc);});
+    const [pa,pb]=pairIds(),aa=world.actor(pa),bb=world.actor(pb);
+    if(pa!==pb&&aa&&bb&&aa.partner===bb.id&&bb.partner===aa.id&&aa.phase==='interacting'&&bb.phase==='interacting'){ctx.strokeStyle='#e6c99b';ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(X(aa.x),Z(aa.z));ctx.lineTo(X(bb.x),Z(bb.z));ctx.stroke();ctx.setLineDash([]);}
+    world.actors.forEach((a,i)=>{ctx.fillStyle=palette[i];ctx.beginPath();ctx.arc(X(a.x),Z(a.z),.22*sc,0,2*Math.PI);ctx.fill();ctx.strokeStyle='#edf2e9';ctx.lineWidth=i===selected||i===pa||i===pb?3:1;ctx.stroke();ctx.beginPath();ctx.moveTo(X(a.x),Z(a.z));ctx.lineTo(X(a.x+Math.sin(a.yaw)*.36),Z(a.z+Math.cos(a.yaw)*.36));ctx.stroke();ctx.fillStyle='#fff';ctx.fillText(a.name,X(a.x),Z(a.z)-.34*sc);});
   }
   function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;world.update(dt);
     if(rendererHook?.draw)rendererHook.draw(now,world);
@@ -65,7 +257,7 @@
     if(now-lastText>240){refresh();lastText=now;}
     requestAnimationFrame(frame);
   }
-  window.SkumringUI={world,attach3d:(v)=>{rendererHook=v;ready3d=true;fallback.style.display='none';$('three-canvas').style.display='block';say('3D-rommet er klart. Velg Ava, Victoria eller karakter 3 og send dem til stol eller seng.');},status:say};
+  window.SkumringUI={world,attach3d:(v)=>{rendererHook=v;ready3d=true;fallback.style.display='none';$('three-canvas').style.display='block';say('3D-rommet er klart. Velg to figurer for møte eller felles tur til sengen.');},status:say};
   refresh();say('2D-forhåndsvisning aktiv. Laster 3D-visningen …');requestAnimationFrame(frame);
 })();
 </script>
@@ -99,6 +291,7 @@ try{
   const torso=box(rig,cloth,[.39,.55,.26],[0,.36,0]);
   box(rig,skin,[.12,.12,.12],[0,.67,0]);
   const head=new THREE.Mesh(new THREE.SphereGeometry(.17,12,8),skin);head.position.set(0,.85,0);rig.add(head);
+  const eyeMat=new THREE.MeshLambertMaterial({color:0x2c2420});for(const side of [-1,1]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.017,8,6),eyeMat);eye.position.set(side*.064,.024,.154);head.add(eye);}
   const crown=new THREE.Mesh(new THREE.SphereGeometry(.174,12,7),hair);crown.scale.set(1,.55,1);crown.position.set(0,.95,-.035);rig.add(crown);
   const arms=[],legs=[];
   for(const side of [-1,1]){
@@ -108,7 +301,7 @@ try{
    box(hip,cloth,[.148,.41,.17],[0,-.205,0]);const knee=new THREE.Group();knee.position.y=-.41;hip.add(knee);box(knee,dark,[.128,.38,.15],[0,-.19,0]);box(knee,dark,[.19,.085,.28],[0,-.38,.09]);legs.push({hip,knee,side});
   }
   const textColor=['#a7d2af','#edb09b','#bacbee'][a.id];const name=label(a.name,textColor);name.position.set(0,2.08,0);group.add(name);
-  return {group,rig,arms,legs,torso,name};
+  return {group,rig,arms,legs,torso,head,name};
  }
  const humans=window.SkumringUI.world.actors.map(actorModel);
  let width=0,height=0,lastRendered=0;
@@ -129,8 +322,12 @@ try{
     r.group.position.set(a.x,0,a.z);r.group.rotation.y=a.yaw;
     // Rotate around hip for a lying pose; shift hips to seat/mattress height.
     r.rig.position.y=.95*(1-a.sit)*(1-a.lie)+.50*a.sit*(1-a.lie)+.76*a.lie;
-    r.rig.rotation.x=-Math.PI*.5*a.lie;
+    // Lie along the bed's long X axis (not across its shorter Z dimension).
+    r.rig.rotation.x=0;r.rig.rotation.z=-Math.PI*.5*a.lie;
     r.torso.scale.y=1+.007*Math.sin(now*.002+i*3)*(1-a.sit)*(1-a.lie);
+    const talking=a.phase==='interacting'?1:0;
+    r.head.rotation.z=talking*.10*Math.sin(now*.0017+i);
+    r.torso.rotation.y=talking*.045*Math.sin(now*.0015+i*2);
     r.legs.forEach((l,j)=>{
      const sign=j===0?1:-1,swing=Math.sin(a.walkCycle+sign*Math.PI/2)*.56*a.walkAmount;
      l.hip.rotation.x=swing*(1-a.sit)*(1-a.lie)-Math.PI*.49*a.sit*(1-a.lie);
@@ -138,11 +335,12 @@ try{
     });
     r.arms.forEach((b,j)=>{
      const sign=j===0?-1:1;
-     b.shoulder.rotation.x=sign*Math.sin(a.walkCycle)*.49*a.walkAmount*(1-a.lie)-.27*a.sit*(1-a.lie)+.28*a.lie;
+     b.shoulder.rotation.x=sign*Math.sin(a.walkCycle)*.49*a.walkAmount*(1-a.lie)-.27*a.sit*(1-a.lie)+.28*a.lie+(a.phase==='interacting'?(j===0?.23:-.10)*(.5+.5*Math.sin(now*.003+i)):0);
      b.elbow.rotation.x=.11+.25*a.sit;
     });
     r.name.position.y=a.lie?1.25:2.10-.45*a.sit;
-    r.name.material.opacity=i===+document.getElementById('character').value?1:.78;
+    const pairChosen=[+document.getElementById('pairA').value,+document.getElementById('pairB').value];
+    r.name.material.opacity=i===+document.getElementById('character').value||pairChosen.includes(i)?1:.75;
    });
    orbit.update();renderer.render(scene,camera);
  }});
