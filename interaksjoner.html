@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="nb"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Skumring – tre karakterer · interaksjonstest</title>
+<meta name="theme-color" content="#18271d">
+<style>
+:root{color-scheme:dark;font:14px system-ui,Segoe UI,sans-serif;color:#eef2e9;background:#101914}*{box-sizing:border-box}body{margin:0;height:100vh;display:flex;flex-direction:column;overflow:hidden}header{background:#22352a;border-bottom:1px solid #405b49;padding:10px 15px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}h1{margin:0;font-size:17px;font-weight:650}a{color:#c9dcb7;text-decoration:none}a:hover{text-decoration:underline}.small{font-size:12px;color:#a9bfaf}main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 282px}#stage{position:relative;min-height:0;background:radial-gradient(ellipse,#263b2d,#101914);overflow:hidden}#stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}#three-canvas{display:none}#hud{position:absolute;left:12px;top:12px;background:#14241edb;padding:8px 11px;border:1px solid #47604d;border-radius:7px;font-size:12px;max-width:70%;white-space:pre-line;pointer-events:none}aside{background:#1c2e23;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;border-left:1px solid #44604d}.block{background:#263a2c;border:1px solid #4a6651;border-radius:8px;padding:11px;display:flex;flex-direction:column;gap:8px}label{font-size:12px;color:#bed1bd}select,button{font:inherit;color:#f0f4ec;background:#33533f;border:1px solid #6c876f;border-radius:7px;padding:10px 11px;cursor:pointer}button:hover{background:#43644b}button:disabled{opacity:.5;cursor:not-allowed}button.primary{background:#a5c498;color:#172b1b;font-weight:700}button.primary:hover{background:#c1d9b6}select{width:100%;background:#192b20}.row{display:flex;gap:6px}.row button{flex:1}.stat{min-height:42px;line-height:1.5;color:#d1ddd1;font-size:13px}#people{font-size:12px;line-height:1.85}#people .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}footer{font-size:12px;background:#203426;padding:8px 14px;color:#b5c5b5;border-top:1px solid #3c5340}@media(max-width:800px){body{height:100dvh}main{display:flex;flex-direction:column}#stage{height:54%;min-height:280px;flex:1}aside{height:46%;min-height:250px;display:block}aside .block{margin-bottom:10px}header{gap:7px}h1{font-size:15px}}@media(prefers-reduced-motion:reduce){button{transition:none}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"}}</script>
+</head><body>
+<header><h1>Skumring · Karakterinteraksjoner v3.1</h1><a href="./">← Til rommet</a><a href="animation.html">Gå-/løpeanimasjoner</a><span class="small">3 figurer · seng · stol</span></header>
+<main><div id="stage"><canvas id="fallback" aria-label="Plantegning med tre bevegelige figurer"></canvas><canvas id="three-canvas" aria-label="3D-rom med tre bevegelige figurer"></canvas><div id="hud" role="status">Starter interaksjonstesten …</div></div>
+<aside>
+  <div class="block"><label for="character">Velg karakter</label><select id="character"><option value="0">Ava</option><option value="1">Victoria</option><option value="2">Karakter 3</option></select><div id="selectedState" class="stat">Klar til å gå</div></div>
+  <div class="block"><label>Bevegelse og møbler</label><button class="primary" id="sit">Gå til stolen og sett deg</button><button class="primary" id="lie">Gå til sengen og legg deg</button><div class="row"><button id="rise">Reis deg</button><button id="reset">Til start</button></div><label for="speed">Ganghastighet: <span id="speedVal">1,35 m/s</span></label><input type="range" id="speed" min="0.65" max="2.2" step="0.05" value="1.35"/></div>
+  <div class="block"><label>Alle tre figurene</label><div id="people"></div><div class="row"><button id="front">Forfra</button><button id="top">Ovenfra</button><button id="orbit">Skrått</button></div><button id="resetAll">Nullstill alle</button></div>
+  <div class="block"><label>Hva testes?</label><div class="small">Gange mot møbel, vending, sette seg, legge seg og reise seg. En seng og en stol kan brukes av én karakter om gangen. Dette er foreløpig en visuell test med enkle testfigurer – ikke ferdige skjelettanimasjoner eller kollisjoner i Unreal.</div></div>
+</aside></main>
+<footer>Dra med musen for å rotere · musehjul for zoom · 30 FPS på 3D-visningen. Figurene og bevegelsene rendres lokalt i nettleseren.</footer>
+<script src="room-v2.js?v=3.0"></script><script src="motion-core.js?v=3.1"></script>
+<script>
+/* UI, deterministic motion and dependency-free top-down fallback. */
+(function(){
+  'use strict';
+  const $=id=>document.getElementById(id), Motion=window.SkumringMotion;
+  const world=new Motion.World();let selected=0,rendererHook=null,last=performance.now(),lastText=0,ready3d=false;
+  const fallback=$('fallback'),ctx=fallback.getContext('2d'),stage=$('stage'),hud=$('hud');
+  const palette=['#759b80','#b87b67','#869ac0'];
+  const say=(message)=>{hud.textContent=message;};
+  function send(action){
+    const out=action==='sit'?world.command(selected,'chair'):action==='lie'?world.command(selected,'bed'):action==='rise'?world.rise(selected):world.reset(selected);
+    say(out.message);refresh();
+  }
+  for(const [id,cmd] of [['sit','sit'],['lie','lie'],['rise','rise'],['reset','reset']])$(id).onclick=()=>send(cmd);
+  $('character').onchange=e=>{selected=+e.target.value;refresh();};
+  $('speed').oninput=e=>{world.speed=+e.target.value;$('speedVal').textContent=world.speed.toFixed(2).replace('.',',')+' m/s';};
+  $('resetAll').onclick=()=>{world.actors.forEach(a=>world.reset(a.id));say('Alle tre figurene er tilbake på startpunktene.');refresh();};
+  for(const id of ['front','top','orbit'])$(id).onclick=()=>{if(rendererHook?.camera)rendererHook.camera(id);else say('2D-plantegning aktiv. 3D-kamera krever tilgang til 3D-biblioteket.');};
+  function refresh(){
+    const a=world.actor(selected);
+    $('selectedState').textContent=a.name+' · '+a.message;
+    $('people').innerHTML=world.actors.map((p,i)=>'<div><span class="dot" style="background:'+palette[i]+'"></span><strong>'+p.name+'</strong> — '+p.message+'</div>').join('');
+    $('sit').disabled=a.phase!=='idle'||(world.reserved.chair!==null&&world.reserved.chair!==selected);
+    $('lie').disabled=a.phase!=='idle'||(world.reserved.bed!==null&&world.reserved.bed!==selected);
+    $('rise').disabled=!['sitting','lying'].includes(a.phase);
+  }
+  function fallbackDraw(){
+    const r=stage.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,1.4),w=Math.max(250,Math.floor(r.width*dpr)),h=Math.max(250,Math.floor(r.height*dpr));
+    if(fallback.width!==w||fallback.height!==h){fallback.width=w;fallback.height=h;}
+    ctx.fillStyle='#0c1c15';ctx.fillRect(0,0,w,h);
+    const sc=Math.min((w-66)/9,(h-76)/7),ox=w/2,oz=h/2+6;
+    function X(x){return ox+x*sc}function Z(z){return oz+z*sc}
+    ctx.fillStyle='#73523b';ctx.fillRect(X(-4.5),Z(-3.5),9*sc,7*sc);
+    ctx.fillStyle='#597b64';ctx.globalAlpha=.22;ctx.fillRect(X(-2.85),Z(-1.2),5.7*sc,4.4*sc);ctx.globalAlpha=1;
+    ctx.strokeStyle='#bcaa77';ctx.lineWidth=1.5;ctx.strokeRect(X(-2.85),Z(-1.2),5.7*sc,4.4*sc);
+    ctx.lineWidth=7;ctx.strokeStyle='#536b58';ctx.beginPath();ctx.moveTo(X(-4.5),Z(3.5));ctx.lineTo(X(-4.5),Z(-3.5));ctx.lineTo(X(4.5),Z(-3.5));ctx.lineTo(X(4.5),Z(3.5));ctx.stroke();
+    ctx.fillStyle='#6f826e';ctx.fillRect(X(2.12),Z(-3.06),2.04*sc,1.67*sc);
+    ctx.fillStyle='#bcb7a4';ctx.fillRect(X(2.2),Z(-3.0),1.85*sc,1.53*sc);
+    ctx.fillStyle='#59482f';ctx.fillRect(X(-4.0),Z(-3.02),.75*sc,.7*sc);
+    ctx.fillStyle='#f0e8d9';ctx.font=Math.max(10,Math.round(12*dpr))+'px system-ui';ctx.textAlign='center';
+    ctx.fillText('STOL',X(-3.64),Z(-3.18));ctx.fillText('SENG',X(3.1),Z(-2.18));
+    world.actors.forEach((a,i)=>{ctx.fillStyle=palette[i];ctx.beginPath();ctx.arc(X(a.x),Z(a.z),.22*sc,0,2*Math.PI);ctx.fill();ctx.strokeStyle='#edf2e9';ctx.lineWidth=i===selected?3:1;ctx.stroke();ctx.beginPath();ctx.moveTo(X(a.x),Z(a.z));ctx.lineTo(X(a.x+Math.sin(a.yaw)*.36),Z(a.z+Math.cos(a.yaw)*.36));ctx.stroke();ctx.fillStyle='#fff';ctx.fillText(a.name,X(a.x),Z(a.z)-.34*sc);});
+  }
+  function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;world.update(dt);
+    if(rendererHook?.draw)rendererHook.draw(now,world);
+    else fallbackDraw();
+    if(now-lastText>240){refresh();lastText=now;}
+    requestAnimationFrame(frame);
+  }
+  window.SkumringUI={world,attach3d:(v)=>{rendererHook=v;ready3d=true;fallback.style.display='none';$('three-canvas').style.display='block';say('3D-rommet er klart. Velg Ava, Victoria eller karakter 3 og send dem til stol eller seng.');},status:say};
+  refresh();say('2D-forhåndsvisning aktiv. Laster 3D-visningen …');requestAnimationFrame(frame);
+})();
+</script>
+<script type="module">
+/* Three.js scene: lightweight articulated test mannequins plus identical cottage geometry. */
+(async()=>{
+try{
+ const THREE=await import('three');
+ const {OrbitControls}=await import('three/addons/controls/OrbitControls.js');
+ const stage=document.getElementById('stage'),canvas=document.getElementById('three-canvas'),room=window.SKUMRING_ROOM;
+ const renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:false,powerPreference:'low-power'});
+ renderer.setPixelRatio(Math.min(1,devicePixelRatio||1));renderer.outputColorSpace=THREE.SRGBColorSpace;
+ const scene=new THREE.Scene();scene.background=new THREE.Color(0x111f18);
+ const camera=new THREE.PerspectiveCamera(45,1,.05,90);
+ const orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;orbit.dampingFactor=.11;orbit.minDistance=2;orbit.maxDistance=23;
+ scene.add(new THREE.HemisphereLight(0xe9f0df,0x596052,2.1));
+ const key=new THREE.DirectionalLight(0xffe9c5,2.2);key.position.set(-2,8,5);scene.add(key);
+ const rim=new THREE.DirectionalLight(0xc1cfc1,.65);rim.position.set(4,5,-3);scene.add(rim);
+ const unit=new THREE.BoxGeometry(1,1,1),dummy=new THREE.Object3D();
+ const mats=new Map();
+ function material(c){const key=c.join(',');if(!mats.has(key))mats.set(key,new THREE.MeshLambertMaterial({color:new THREE.Color().setRGB(...c.map(v=>v/255),THREE.SRGBColorSpace),side:THREE.FrontSide}));return mats.get(key);}
+ const byColor=new Map();room.boxes.forEach(b=>{const c=b.color.join(',');if(!byColor.has(c))byColor.set(c,[]);byColor.get(c).push(b)});
+ for(const [col,arr] of byColor){const im=new THREE.InstancedMesh(unit,material(arr[0].color),arr.length);arr.forEach((b,i)=>{dummy.position.set((b.lo[0]+b.hi[0])/2,(b.lo[1]+b.hi[1])/2,(b.lo[2]+b.hi[2])/2);dummy.scale.set(b.hi[0]-b.lo[0],b.hi[1]-b.lo[1],b.hi[2]-b.lo[2]);dummy.updateMatrix();im.setMatrixAt(i,dummy.matrix)});im.instanceMatrix.needsUpdate=true;im.receiveShadow=false;scene.add(im);}
+ for(const p of room.planes){const geo=new THREE.BufferGeometry(),verts=[];p.p.forEach(v=>verts.push(...v));geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));geo.setIndex(p.f.flat());geo.computeVertexNormals();scene.add(new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:new THREE.Color().setRGB(...p.color.map(x=>x/255),THREE.SRGBColorSpace),side:THREE.DoubleSide})));}
+ function label(text,color){const cnv=document.createElement('canvas');cnv.width=256;cnv.height=64;const c=cnv.getContext('2d');c.fillStyle='rgba(10,19,14,.85)';c.fillRect(0,4,256,56);c.fillStyle=color;c.font='bold 28px system-ui';c.textAlign='center';c.fillText(text,128,43);const t=new THREE.CanvasTexture(cnv),sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false}));sp.scale.set(.95,.24,1);return sp;}
+ function box(parent,mat,size,xyz){const m=new THREE.Mesh(new THREE.BoxGeometry(...size),mat);m.position.set(...xyz);parent.add(m);return m;}
+ function actorModel(a){
+  const baseColor=new THREE.Color(a.color),cloth=new THREE.MeshStandardMaterial({color:baseColor,roughness:1,metalness:0}),skin=new THREE.MeshStandardMaterial({color:0xc1ad9a,roughness:1}),dark=new THREE.MeshStandardMaterial({color:0x302a29,roughness:1}),hair=new THREE.MeshStandardMaterial({color:a.id===1?0x9d5939:0x352a23,roughness:1});
+  const group=new THREE.Group();scene.add(group);const rig=new THREE.Group();group.add(rig);
+  box(rig,cloth,[.34,.19,.23],[0,0,0]);
+  const torso=box(rig,cloth,[.39,.55,.26],[0,.36,0]);
+  box(rig,skin,[.12,.12,.12],[0,.67,0]);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.17,12,8),skin);head.position.set(0,.85,0);rig.add(head);
+  const crown=new THREE.Mesh(new THREE.SphereGeometry(.174,12,7),hair);crown.scale.set(1,.55,1);crown.position.set(0,.95,-.035);rig.add(crown);
+  const arms=[],legs=[];
+  for(const side of [-1,1]){
+   const shoulder=new THREE.Group();shoulder.position.set(side*.265,.54,0);rig.add(shoulder);
+   box(shoulder,cloth,[.12,.35,.13],[0,-.175,0]);const elbow=new THREE.Group();elbow.position.y=-.35;shoulder.add(elbow);box(elbow,skin,[.102,.32,.11],[0,-.16,0]);arms.push({shoulder,elbow,side});
+   const hip=new THREE.Group();hip.position.set(side*.112,-.095,0);rig.add(hip);
+   box(hip,cloth,[.148,.41,.17],[0,-.205,0]);const knee=new THREE.Group();knee.position.y=-.41;hip.add(knee);box(knee,dark,[.128,.38,.15],[0,-.19,0]);box(knee,dark,[.19,.085,.28],[0,-.38,.09]);legs.push({hip,knee,side});
+  }
+  const textColor=['#a7d2af','#edb09b','#bacbee'][a.id];const name=label(a.name,textColor);name.position.set(0,2.08,0);group.add(name);
+  return {group,rig,arms,legs,torso,name};
+ }
+ const humans=window.SkumringUI.world.actors.map(actorModel);
+ let width=0,height=0,lastRendered=0;
+ function resize(){const r=stage.getBoundingClientRect();const w=Math.max(220,Math.floor(r.width)),h=Math.max(220,Math.floor(r.height));if(w===width&&h===height)return;width=w;height=h;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+ function cameraView(mode){
+  if(mode==='top')camera.position.set(.01,14.5,2.5);
+  else if(mode==='front')camera.position.set(0,3.8,10.7);
+  else camera.position.set(6.8,4.6,8.8);
+  orbit.target.set(0,1.12,-.15);orbit.update();
+ }
+ cameraView('orbit');
+ window.addEventListener('resize',resize);resize();
+ window.SkumringUI.attach3d({camera:cameraView,draw:(now,world)=>{
+   if(now-lastRendered<32)return;lastRendered=now;
+   resize();
+   humans.forEach((r,i)=>{
+    const a=world.actor(i);
+    r.group.position.set(a.x,0,a.z);r.group.rotation.y=a.yaw;
+    // Rotate around hip for a lying pose; shift hips to seat/mattress height.
+    r.rig.position.y=.95*(1-a.sit)*(1-a.lie)+.50*a.sit*(1-a.lie)+.76*a.lie;
+    r.rig.rotation.x=-Math.PI*.5*a.lie;
+    r.torso.scale.y=1+.007*Math.sin(now*.002+i*3)*(1-a.sit)*(1-a.lie);
+    r.legs.forEach((l,j)=>{
+     const sign=j===0?1:-1,swing=Math.sin(a.walkCycle+sign*Math.PI/2)*.56*a.walkAmount;
+     l.hip.rotation.x=swing*(1-a.sit)*(1-a.lie)-Math.PI*.49*a.sit*(1-a.lie);
+     l.knee.rotation.x=(Math.max(0,-swing)*.55)*(1-a.sit)*(1-a.lie)+Math.PI*.50*a.sit*(1-a.lie);
+    });
+    r.arms.forEach((b,j)=>{
+     const sign=j===0?-1:1;
+     b.shoulder.rotation.x=sign*Math.sin(a.walkCycle)*.49*a.walkAmount*(1-a.lie)-.27*a.sit*(1-a.lie)+.28*a.lie;
+     b.elbow.rotation.x=.11+.25*a.sit;
+    });
+    r.name.position.y=a.lie?1.25:2.10-.45*a.sit;
+    r.name.material.opacity=i===+document.getElementById('character').value?1:.78;
+   });
+   orbit.update();renderer.render(scene,camera);
+ }});
+} catch(error){window.SkumringUI.status('3D-visningen kunne ikke lastes: '+error.message+'\n2D-plantegningen fungerer fortsatt.');console.error(error)}
+})();
+</script>
+</body></html>
