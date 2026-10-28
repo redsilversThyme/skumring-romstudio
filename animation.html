@@ -1,0 +1,308 @@
+<!doctype html><html lang="nb"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#15231b"><title>Skumring · Animasjonsstudio</title>
+<style>
+:root{font:14px system-ui,Segoe UI,sans-serif;color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;background:#101a15;color:#eff4ed}body{display:flex;flex-direction:column}header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:#233729;border-bottom:1px solid #526c56}h1{font-size:16px;margin:0 10px 0 0}a{color:#d5ebd1;text-decoration:underline}button,.pick,select{font:inherit;background:#344d3b;color:#f4f6ee;border:1px solid #687f66;border-radius:6px;padding:8px 11px;cursor:pointer}button:hover,.pick:hover{background:#4d6a52}button:disabled{opacity:.48;cursor:default}.pick{display:inline-flex;align-items:center;justify-content:center;background:#a4c68e;color:#17261a;font-weight:700;border-color:#bed9a9}label{font-size:12px;color:#cbdcc7}header .sub{font-size:12px;color:#b7ccbb}#layout{flex:1;min-height:300px;display:grid;grid-template-columns:minmax(0,1fr) 282px;overflow:hidden}#viewport{position:relative;min-width:0;min-height:300px;background:#17251d}#anim-canvas{width:100%;height:100%;display:block;touch-action:none}#overlay{position:absolute;top:12px;left:12px;max-width:calc(100% - 24px);padding:8px 12px;background:#17271de9;border:1px solid #4f6753;border-radius:7px;pointer-events:none;font-size:12px;white-space:pre-wrap}aside{background:#1c3024;border-left:1px solid #47624e;overflow:auto;padding:13px;display:flex;flex-direction:column;gap:10px}.block{display:flex;flex-direction:column;gap:5px}.flexrow{display:flex;gap:7px}.flexrow>*{flex:1}input[type=range],select{width:100%}input[type=file]{display:none}.pair{display:flex;align-items:center;gap:9px}.pair input{accent-color:#a4c68e}small{color:#b3c4b4;line-height:1.5}.hint{background:#273e2e;border:1px solid #456449;border-radius:7px;padding:10px;line-height:1.45;font-size:12px;color:#d4e1cf}#clipstatus{color:#cee0ce;min-height:50px;white-space:pre-line;font-size:12px}#mode{color:#f1f4ee}#timeLabel,#rateLabel{font-variant-numeric:tabular-nums}footer{background:#233729;padding:7px 12px;color:#b7cabb;font-size:11px;line-height:1.45}@media(max-width:850px){#layout{grid-template-columns:1fr;display:flex;flex-direction:column;overflow:auto}#viewport{height:55vh;flex:none}aside{border-left:0;border-top:1px solid #47624e;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}aside>.hint,aside>.wide{grid-column:span 2}}@media(max-width:500px){aside{display:flex;flex-direction:column}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"}}</script>
+</head><body>
+<header><h1>Skumring · Animasjonsstudio</h1><button id="close" title="Tilbake til baserommet">← Rommet</button><span class="sub">Den samme nettsiden · lokal 3D-modell</span></header>
+<div id="layout"><div id="viewport"><canvas id="anim-canvas" aria-label="3D-scene med rigget karakter og animasjoner"></canvas><div id="overlay" role="status">Klargjør 3D-rommet …</div></div>
+<aside>
+<div class="hint wide"><b>Én gang:</b> Trykk «Velg modellen», og velg ZIP-en du sendte i ChatGPT, eller GLB-filen i ZIP-en. Modellen brukes bare lokalt i nettleseren og lastes <b>ikke</b> opp til det offentlige GitHub-prosjektet.</div>
+<div class="block wide"><label for="model-file" class="pick">Velg modellen (.zip eller .glb)</label><input id="model-file" type="file" accept=".zip,.glb,application/zip,model/gltf-binary"><small id="modelname">Ingen karakter innlastet ennå</small></div>
+<div class="block"><label for="mode">Animasjon</label><select id="mode"><option value="demo">Gå → overgang → løp</option><option value="walk">Gange · Walk V7</option><option value="transition">Overgang · WalkToRun V1</option><option value="run">Løp · Run V4</option></select></div>
+<div class="block"><label for="spawn">Startpunkt</label><select id="spawn"><option value="Ava">Ava-markør</option><option value="Victoria">Victoria-markør</option></select></div>
+<div class="flexrow wide"><button id="play" disabled>Spill av</button><button id="reset" disabled>Start på nytt</button></div>
+<div class="block wide"><label for="timeline">Tidslinje · <span id="timeLabel">0,00 / 0,00 s</span></label><input id="timeline" type="range" min="0" max="1" step="0.005" value="0" disabled></div>
+<div class="block wide"><label for="rate">Avspillingsfart · <span id="rateLabel">1,00×</span></label><input id="rate" type="range" min="0.25" max="1.5" step="0.05" value="1"></div>
+<label class="pair wide"><input id="forward" type="checkbox"> Bevegelse fremover (root motion)</label>
+<label class="pair wide"><input id="walls" type="checkbox" checked> Vis veggene</label>
+<div class="flexrow wide"><button id="camfront">Forfra</button><button id="camangle">Skrått</button><button id="camtops">Ovenfra</button></div>
+<div id="clipstatus" class="wide">Venter på modellen.</div>
+<div class="hint wide"><b>Merk:</b> Dette er en visuell test i rommet, ikke kollisjonssystem eller Unreal Animation Blueprint. Animasjoner med fremdrift kan føre figuren ut av testfeltet. Standard er derfor gange/løp på stedet.</div>
+</aside></div><footer>Dra i 3D-rommet for å rotere kameraet · musehjulet zoomer · 30 FPS-grense for mindre PC-belastning. Dersom lokal lagring støttes, blir modellen liggende også etter F5.</footer>
+<script src="room-v2.js?v=2.1"></script><script>
+/* Skumring local-only ZIP/GLB loader. Model bytes never leave the browser. */
+(function () {
+  'use strict';
+  function assert(cond, message) { if (!cond) throw new Error(message); }
+  function zipEntry(zip) {
+    const b = new Uint8Array(zip), v = new DataView(zip), n = b.length;
+    let eocd = -1;
+    for (let p = n - 22; p >= Math.max(0, n - 65557); --p) {
+      if (v.getUint32(p, true) === 0x06054b50) { eocd = p; break; }
+    }
+    assert(eocd >= 0, 'ZIP-arkivet har ingen gyldig avslutning.');
+    const count = v.getUint16(eocd + 10, true);
+    let pos = v.getUint32(eocd + 16, true);
+    const decoder = new TextDecoder();
+    let best = null;
+    for (let i = 0; i < count; i++) {
+      assert(pos + 46 <= n && v.getUint32(pos, true) === 0x02014b50, 'Ugyldig ZIP-innholdsfortegnelse.');
+      const method = v.getUint16(pos + 10, true);
+      const compressed = v.getUint32(pos + 20, true), original = v.getUint32(pos + 24, true);
+      const nameLength = v.getUint16(pos + 28, true), extra = v.getUint16(pos + 30, true);
+      const comment = v.getUint16(pos + 32, true), local = v.getUint32(pos + 42, true);
+      const name = decoder.decode(b.subarray(pos + 46, pos + 46 + nameLength));
+      if (name.toLowerCase().endsWith('.glb') && (!best || original > best.original)) {
+        best = {name, method, compressed, original, local};
+      }
+      pos += 46 + nameLength + extra + comment;
+    }
+    assert(best, 'Fant ingen .glb-modell i ZIP-filen.');
+    assert(best.local + 30 <= n && v.getUint32(best.local, true) === 0x04034b50, 'Fant ikke dataene til 3D-modellen.');
+    const start = best.local + 30 + v.getUint16(best.local + 26, true) + v.getUint16(best.local + 28, true);
+    assert(start + best.compressed <= n, '3D-filen er ufullstendig.');
+    return { ...best, payload: b.subarray(start, start + best.compressed) };
+  }
+  async function unpackGLB(buffer) {
+    const entry = zipEntry(buffer);
+    assert(entry.original <= 100 * 1024 * 1024, 'Modellen er for stor til nettvisningen (maks 100 MB).');
+    if (entry.method === 0) return entry.payload.slice().buffer;
+    assert(entry.method === 8, 'ZIP-komprimeringen støttes ikke.');
+    assert(typeof DecompressionStream !== 'undefined', 'Nettleseren støtter ikke ZIP-utpakking. Bruk en .glb-fil.');
+    const decompressed = await new Response(new Blob([entry.payload]).stream()
+      .pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer();
+    assert(decompressed.byteLength === entry.original, 'ZIP-filen ga feil modellstørrelse.');
+    return decompressed;
+  }
+  function readGLBHeader(buffer) {
+    const v = new DataView(buffer);
+    assert(buffer.byteLength > 28 && v.getUint32(0, true) === 0x46546c67 && v.getUint32(4, true) === 2, 'Filen er ikke en gyldig GLB (glTF 2.0).');
+    const jsonLen = v.getUint32(12, true);
+    assert(v.getUint32(16, true) === 0x4e4f534a && 20 + jsonLen + 8 <= v.byteLength, 'GLB mangler JSON-geometri.');
+    const json = JSON.parse(new TextDecoder().decode(new Uint8Array(buffer, 20, jsonLen)).trim());
+    const binAt = 20 + jsonLen;
+    const binLen = v.getUint32(binAt, true);
+    assert(v.getUint32(binAt + 4, true) === 0x004e4942 && binAt + 8 + binLen <= v.byteLength, 'GLB mangler 3D-buffer.');
+    return {json, binary:new Uint8Array(buffer, binAt + 8, binLen)};
+  }
+  function preparePreviewGLB(buffer) {
+    // Remove original 4K maps and facial morph targets only for LOW-GPU preview.
+    // The mesh, skinning, rig, all six motion clips, and bone animations remain.
+    const {json,binary} = readGLBHeader(buffer);
+    assert(Array.isArray(json.skins) && json.skins.length && Array.isArray(json.animations) && json.animations.length, 'Modellen mangler skjelett eller animasjoner.');
+    delete json.images; delete json.textures; delete json.samplers;
+    json.extensionsUsed = (json.extensionsUsed || []).filter(x => !/^KHR_materials_/.test(x));
+    if (!json.extensionsUsed.length) delete json.extensionsUsed;
+    const colors = [
+      [.59,.59,.58,1],[.59,.59,.58,1],[.59,.59,.58,1],
+      [.83,.82,.80,1],[.22,.23,.22,1],[.20,.17,.15,1],
+      [.27,.23,.20,1],[.61,.60,.59,1],[.48,.29,.31,1],
+      [.58,.58,.56,1],[.18,.16,.14,1],[.67,.66,.62,.6]
+    ];
+    json.materials = (json.materials || []).map((m,i) => ({
+      name:m.name || 'Material_'+i, doubleSided:!!m.doubleSided,
+      pbrMetallicRoughness:{baseColorFactor:colors[i] || [.6,.6,.6,1],metallicFactor:0,roughnessFactor:1}
+    }));
+    (json.meshes || []).forEach(mesh => {
+      delete mesh.weights;
+      mesh.primitives.forEach(p => { delete p.targets; delete p.extensions; });
+    });
+    (json.nodes || []).forEach(n => delete n.weights);
+    const raw = new TextEncoder().encode(JSON.stringify(json));
+    const jp = (raw.length + 3) & ~3, bp = (binary.length + 3) & ~3;
+    const out = new ArrayBuffer(12 + 8 + jp + 8 + bp), d = new DataView(out), bytes = new Uint8Array(out);
+    d.setUint32(0, 0x46546c67, true); d.setUint32(4, 2, true); d.setUint32(8, out.byteLength, true);
+    d.setUint32(12, jp, true); d.setUint32(16, 0x4e4f534a, true);
+    bytes.fill(0x20, 20, 20 + jp); bytes.set(raw, 20);
+    d.setUint32(20 + jp, bp, true); d.setUint32(24 + jp, 0x004e4942, true);
+    bytes.set(binary, 28 + jp);
+    return out;
+  }
+  const DB = 'skumring-character-test-local', STORE='models';
+  function openDB() {
+    return new Promise((resolve,reject) => {
+      if (!('indexedDB' in window)) { reject(new Error('IndexedDB er ikke tilgjengelig.')); return; }
+      const req = indexedDB.open(DB, 1);
+      req.onupgradeneeded=()=>{ if (!req.result.objectStoreNames.contains(STORE)) req.result.createObjectStore(STORE); };
+      req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);
+    });
+  }
+  async function storeGLB(buffer,name) {
+    const db=await openDB();
+    try { await new Promise((resolve,reject) => {
+      const tx=db.transaction(STORE,'readwrite');
+      tx.objectStore(STORE).put({buffer,name,updated:Date.now()},'active');
+      tx.oncomplete=resolve; tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error || new Error('Lagringen ble avbrutt.'));
+    }); } finally {db.close();}
+  }
+  async function cachedGLB() {
+    const db=await openDB();
+    try {return await new Promise((resolve,reject)=>{
+      const tx=db.transaction(STORE,'readonly');const r=tx.objectStore(STORE).get('active');
+      r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>reject(r.error);
+    });} finally {db.close();}
+  }
+  async function fromUserFile(file) {
+    assert(file && file.size > 0 && file.size < 110 * 1024 * 1024, 'Velg en ZIP eller GLB på under 110 MB.');
+    const data=await file.arrayBuffer();
+    const raw=file.name.toLowerCase().endsWith('.zip') ? await unpackGLB(data) : data;
+    const {json}=readGLBHeader(raw);
+    const required = ['Walk_V7_Balanced_InPlace','Run_V4_AnkleAware_InPlace','WalkToRun_V1_InPlace'];
+    const actual=(json.animations||[]).map(a=>a.name);
+    for(const name of required)assert(actual.includes(name),'Filen mangler animasjonen '+name);
+    return raw;
+  }
+  window.SkumringAssets={unpackGLB,zipEntry,readGLBHeader,preparePreviewGLB,storeGLB,cachedGLB,fromUserFile};
+})();
+
+</script><script type="module">
+/* Skumring: rigged GLB with the user's six unmodified locomotion clips inside the current cottage. */
+const $=id=>document.getElementById(id);
+const stage=$('viewport'),status=$('overlay'),detail=$('clipstatus');
+const walk='Walk_V7_Balanced', run='Run_V4_AnkleAware', trans='WalkToRun_V1';
+let THREE,OrbitControls,GLTFLoader,renderer,scene,camera,orbit,clock;
+let roomObjects=[], model=null, mixer=null, root=null, active=null, clipMap={}, info=null;
+let ready=null, playing=false,elapsed=0,rate=1,lastFrame=0,dirty=true,baseHeight=0;
+let frames=0, cachedLocal=false, currentName='';
+function progress(s){status.textContent=s;}
+function chosenSpawn(){return $('spawn').value==='Victoria'?[.70,0,.28]:[-.70,0,.28]}
+async function init3D(){
+ if(ready)return ready;
+ ready=(async()=>{
+  progress('Laster 3D-motor og det eksisterende Skumring-rommet …');
+  THREE=await import('three');
+  ({OrbitControls}=await import('three/addons/controls/OrbitControls.js'));
+  ({GLTFLoader}=await import('three/addons/loaders/GLTFLoader.js'));
+  renderer=new THREE.WebGLRenderer({canvas:$('anim-canvas'),antialias:false,alpha:false,powerPreference:'low-power'});
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,1));
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+  scene=new THREE.Scene();scene.background=new THREE.Color(0x142019);
+  camera=new THREE.PerspectiveCamera(47,1,.06,65);
+  camera.position.set(0,2.5,7.4);
+  orbit=new OrbitControls(camera,renderer.domElement);
+  orbit.target.set(0,1.15,0);orbit.enableDamping=true;orbit.dampingFactor=.08;
+  orbit.minDistance=.75;orbit.maxDistance=19;orbit.maxPolarAngle=Math.PI-.07;
+  orbit.addEventListener('change',()=>{dirty=true});orbit.update();
+  const hemi=new THREE.HemisphereLight(0xdce6d9,0x424b40,2.2);scene.add(hemi);
+  const key=new THREE.DirectionalLight(0xffeed8,2.1);key.position.set(0,5,3);scene.add(key);
+  const rim=new THREE.DirectionalLight(0xbacbca,1.1);rim.position.set(-3,3,-3);scene.add(rim);
+  clock=new THREE.Clock();
+  makeRoom();
+  updateSize();new ResizeObserver(updateSize).observe(stage);
+  setCamera('front');
+  requestAnimationFrame(frame);
+  progress('Rommet er klart. Velg ZIP/GLB for å sette inn karakteren.');
+ })().catch(e=>{ready=null;progress('Kunne ikke laste 3D-motor: '+e.message+'\nSjekk internettforbindelsen og åpne siden i Chrome/Edge.');throw e});
+ return ready;
+}
+function updateSize(){if(!renderer)return;const w=Math.max(200,stage.clientWidth),h=Math.max(250,stage.clientHeight);
+ renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();dirty=true;}
+function makeRoom(){
+ const rm=window.SKUMRING_ROOM;
+ if(!rm)throw Error('Rommodellen ble ikke funnet.');
+ const geometry=new THREE.BoxGeometry(1,1,1),groupByColor=new Map(),dummy=new THREE.Object3D();
+ for(const box of rm.boxes){
+  const c=box.color;const isWall=/^(03_|04_|05_|06_|08_)/.test(box.group);const key=c.join(',')+'|'+(isWall?'wall':'other');
+  if(!groupByColor.has(key))groupByColor.set(key,[]);
+  groupByColor.get(key).push(box);
+ }
+ for(const [rgb,boxes] of groupByColor){
+  const color=rgb.split('|')[0].split(',').map(Number);
+  const mat=new THREE.MeshLambertMaterial({color:new THREE.Color().setRGB(...color.map(x=>x/255),THREE.SRGBColorSpace),side:THREE.FrontSide});
+  const mesh=new THREE.InstancedMesh(geometry,mat,boxes.length);mesh.userData.isWall=rgb.endsWith('|wall');
+  boxes.forEach((b,i)=>{const a=b.lo,z=b.hi;dummy.position.set((a[0]+z[0])/2,(a[1]+z[1])/2,(a[2]+z[2])/2);
+   dummy.scale.set(z[0]-a[0],z[1]-a[1],z[2]-a[2]);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);
+  });mesh.instanceMatrix.needsUpdate=true;scene.add(mesh);roomObjects.push(mesh);
+ }
+ // Depth-tested scene uses a reduced material-palette and exact original room geometry.
+ for(const p of rm.planes){
+  const verts=[],ids=[];p.p.forEach(x=>verts.push(...x));p.f.forEach(x=>ids.push(...x));
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));g.setIndex(ids);g.computeVertexNormals();
+  const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:new THREE.Color().setRGB(...p.color.map(x=>x/255),THREE.SRGBColorSpace),side:THREE.DoubleSide}));
+  m.userData.roomGroup=p.group;scene.add(m);roomObjects.push(m);
+ }
+ // The sofa and two start markers are added in room-v2.js, not synthesized here.
+ $('walls').addEventListener('change',toggleWalls);toggleWalls();
+}
+function toggleWalls(){
+ const visible=$('walls').checked;
+ for(const mesh of roomObjects){
+  if(mesh.isInstancedMesh){
+    mesh.visible=visible || !mesh.userData.isWall;
+  }else{mesh.visible=visible || !/Forest_Rain_View/.test(mesh.userData.roomGroup||'');}
+ }dirty=true;
+}
+function setCamera(view){if(!camera)return;
+ if(view==='front'){camera.position.set(0,2.45,7.4);orbit.target.set(0,1.15,0)}
+ if(view==='angle'){camera.position.set(4.9,3.0,5.9);orbit.target.set(0,1.12,0)}
+ if(view==='top'){camera.position.set(.001,8.5,2);orbit.target.set(0,.1,0)}
+ orbit.update();dirty=true;}
+function totalDuration(){if(!info)return 1;return $('mode').value==='demo'?2*info.dw+info.dt+3*info.dr:$('mode').value==='walk'?4*info.dw:$('mode').value==='run'?5*info.dr:info.dt;}
+function animationPlan(time){
+ const mode=$('mode').value;const forward=$('forward').checked;const {dw,dr,dt,sw,sr,dist}=info;
+ const intro=2*dw;
+ let stem,local,offset=0,label;
+ if(mode==='walk'||(mode==='demo'&&time<intro)){
+  stem=walk;local=time%dw;offset=Math.floor(time/dw)*sw;label='GANGE';
+ } else if(mode==='transition'||(mode==='demo'&&time<intro+dt)){
+  stem=trans;local=Math.min(dt,Math.max(0,mode==='demo'?time-intro:time));offset=mode==='demo'?2*sw:0;
+  label=local<info.accel?'OVERGANG: ØKER FART':'OVERGANG: LØPESTEG';
+ } else {
+  stem=run;const t=mode==='demo'?Math.max(0,time-intro-dt):time;
+  local=t%dr;offset=(mode==='demo'?2*sw+dist:0)+Math.floor(t/dr)*sr;label='LØPING';
+ }
+ return {name:stem+(forward?'_RootMotion':'_InPlace'),local,offset:forward?offset:0,label};
+}
+function pose(){if(!info||!model)return;
+ const plan=animationPlan(elapsed),clip=clipMap[plan.name];if(!clip)return;
+ if(!active||active.getClip()!==clip){mixer.stopAllAction();active=mixer.clipAction(clip).reset().setLoop(THREE.LoopOnce,1);active.clampWhenFinished=true;active.play();active.paused=true;}
+ active.time=Math.min(plan.local,clip.duration);active.enabled=true;active.setEffectiveWeight(1);mixer.update(0);
+ const [x,y,z]=chosenSpawn();model.position.set(x,y+baseHeight,z+plan.offset);
+ if($('forward').checked){const rootZ=root?.position.z||0;const pos=z+plan.offset+rootZ;
+  if(Math.abs(pos) > 1.6)detail.textContent='OBS: Figuren er utenfor den åpne testflaten.\n'+plan.name+'\nBruk «På stedet» for å bli inne i rommet.';
+  else detail.textContent=plan.label+'\n'+plan.name;
+ }else detail.textContent=plan.label+'\n'+plan.name;
+ $('timeline').value=String(elapsed);$('timeLabel').textContent=elapsed.toFixed(2).replace('.',',')+' / '+totalDuration().toFixed(2).replace('.',',')+' s';
+ dirty=true;
+}
+function reset(){if(!info)return;elapsed=0;playing=true;$('play').textContent='Pause';$('timeline').max=String(totalDuration());pose();}
+function frame(now){requestAnimationFrame(frame);if(!renderer)return;
+ if(now-lastFrame<33)return;const delta=Math.min((now-lastFrame)/1000,.08);lastFrame=now;
+ if(info&&playing){elapsed=Math.min(totalDuration(),elapsed+delta*rate);if(elapsed>=totalDuration()){playing=false;$('play').textContent='Spill av';}pose()}
+ orbit.update();if(dirty){renderer.render(scene,camera);dirty=false;}
+}
+function releaseModel(){if(!model)return;
+ mixer?.stopAllAction();scene.remove(model);
+ model.traverse(obj=>{obj.geometry?.dispose();if(obj.material){for(const mat of Array.isArray(obj.material)?obj.material:[obj.material])mat.dispose();}});
+ model=null;mixer=null;root=null;active=null;clipMap={};info=null;
+}
+async function loadRealModel(raw,name){
+ await init3D();progress('Leser modellens skjelett og animasjonsklipp …');
+ const light=window.SkumringAssets.preparePreviewGLB(raw);
+ const gltf=await new Promise((resolve,reject)=>new GLTFLoader().parse(light,'',resolve,reject));
+ const all=Object.fromEntries(gltf.animations.map(clip=>[clip.name,clip]));
+ for(const key of [walk,trans,run])for(const suffix of ['_InPlace','_RootMotion'])if(!all[key+suffix])throw Error('Mangler animasjonsklipp: '+key+suffix);
+ releaseModel();model=gltf.scene;model.traverse(obj=>{if(obj.isMesh)obj.frustumCulled=false;});
+ scene.add(model);root=model.getObjectByName('LocomotionRoot');if(!root)throw Error('Fant ikke LocomotionRoot i modellens rigg.');
+ mixer=new THREE.AnimationMixer(model);clipMap=all;active=null;
+ const bb=new THREE.Box3().setFromObject(model);baseHeight=-bb.min.y+.008;
+ info={dw:all[walk+'_InPlace'].duration,dr:all[run+'_InPlace'].duration,dt:all[trans+'_InPlace'].duration,sw:1.12,sr:2.65*all[run+'_InPlace'].duration,dist:3.584095664,accel:.874961622};
+ currentName=name;$('modelname').textContent='Aktiv modell: '+name+' · '+gltf.animations.length+' animasjoner';
+ for(const id of ['play','reset','timeline'])$(id).disabled=false;
+ reset();progress('Modellen er satt inn i rommet. Test animasjonene med kontrollene til høyre.');
+}
+$('model-file').addEventListener('change',async ev=>{
+ const file=ev.target.files?.[0];if(!file)return;ev.target.value='';
+ try{
+  progress('Åpner '+file.name+' …');const raw=await window.SkumringAssets.fromUserFile(file);
+  await loadRealModel(raw,file.name);
+  try{await window.SkumringAssets.storeGLB(raw,file.name);cachedLocal=true;detail.textContent+='\nModellen lagres lokalt for neste F5.';}
+  catch(e){cachedLocal=false;detail.textContent+='\nKan ikke lagre modellen i nettleseren: '+e.message;}
+ }catch(e){progress('Kunne ikke åpne modellen: '+e.message);console.error(e)}
+});
+$('mode').addEventListener('change',reset);$('forward').addEventListener('change',()=>{if(info)pose()});$('spawn').addEventListener('change',()=>{if(info)pose()});
+$('play').addEventListener('click',()=>{if(!info)return;if(elapsed>=totalDuration()){reset();return;}playing=!playing;$('play').textContent=playing?'Pause':'Spill av';});
+$('reset').addEventListener('click',reset);
+$('rate').addEventListener('input',ev=>{rate=+ev.target.value;$('rateLabel').textContent=rate.toFixed(2).replace('.',',')+'×';});
+$('timeline').addEventListener('input',ev=>{elapsed=+ev.target.value;playing=false;$('play').textContent='Spill av';pose()});
+$('camfront').addEventListener('click',()=>setCamera('front'));$('camangle').addEventListener('click',()=>setCamera('angle'));$('camtops').addEventListener('click',()=>setCamera('top'));
+$('close').addEventListener('click',()=>{if(window.parent&&window.parent!==window)window.parent.postMessage({type:'skumring-close-animation'},location.origin);else location.href='./';});
+(async()=>{
+ try{await init3D();const cached=await window.SkumringAssets.cachedGLB().catch(()=>null);
+  if(cached){progress('Gjenoppretter lagret 3D-modell …');await loadRealModel(cached.buffer,cached.name);cachedLocal=true;}
+ }catch(e){progress('Animasjonsvisning: '+e.message+'\nDet eksisterende romstudioet er fortsatt tilgjengelig.');console.error(e)}
+})();
+
+</script>
+</body></html>
