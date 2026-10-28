@@ -74,5 +74,31 @@
   }
   span('Door_handle_mount',door,'brass',-2.92,-2.89,1.0,1.12,-.34,-.29);
   span('Door_handle',door,'brass',-2.89,-2.82,1.045,1.075,-.41,-.30);
-  window.SKUMRING_ROOM={version:'Baserom v2.0',boxes,planes,floorLevel:0,units:'meters'};
+
+  // Animation area: 3m x 3m. Lines sit directly above floor, unobstructed centre.
+  span('Anim_zone_rear','09_Animation_Zone','edge',-1.5,1.5,0,.008,-1.25,-1.19);
+  span('Anim_zone_front','09_Animation_Zone','edge',-1.5,1.5,0,.008,1.75,1.81);
+  span('Anim_zone_left','09_Animation_Zone','edge',-1.5,-1.44,0,.008,-1.25,1.81);
+  span('Anim_zone_right','09_Animation_Zone','edge',1.44,1.5,0,.008,-1.25,1.81);
+  span('Anim_zone_mid_x','09_Animation_Zone',[96,112,92],-.015,.015,0,.007,-1.25,1.81);
+  span('Anim_zone_mid_z','09_Animation_Zone',[96,112,92],-1.5,1.5,0,.007,.25,.31);
+
+  // Flat floor markers for Ava and Victoria; not full-size character replacements.
+  span('Start_Ava_base','10_Start_Markers',[88,132,114],-.95,-.43,0,.012,.02,.54);
+  span('Start_Ava_core','10_Start_Markers',[128,168,149],-.84,-.54,.012,.018,.13,.43);
+  span('Start_Victoria_base','10_Start_Markers',[142,87,83],.43,.95,0,.012,.02,.54);
+  span('Start_Victoria_core','10_Start_Markers',[184,118,113],.54,.84,.012,.018,.13,.43);
+
+  // Compact test sofa: left wall; feet rest on the floor; centre animation zone clear.
+  span('Sofa_body','11_Test_Sofa',[66,98,81],-2.72,-2.08,.12,.36,.72,2.02);
+  span('Sofa_left_arm','11_Test_Sofa',[58,86,72],-2.72,-2.08,.12,.56,.72,.90);
+  span('Sofa_right_arm','11_Test_Sofa',[58,86,72],-2.72,-2.08,.12,.56,1.84,2.02);
+  span('Sofa_back','11_Test_Sofa',[53,79,66],-2.72,-2.56,.36,.86,.72,2.02);
+  span('Sofa_seat_split','11_Test_Sofa',[73,108,89],-2.50,-2.10,.34,.39,.74,2.00);
+  span('Sofa_leg_0','11_Test_Sofa','dark',-2.68,-2.62,0,.12,.78,.84);
+  span('Sofa_leg_1','11_Test_Sofa','dark',-2.18,-2.12,0,.12,.78,.84);
+  span('Sofa_leg_2','11_Test_Sofa','dark',-2.68,-2.62,0,.12,1.90,1.96);
+  span('Sofa_leg_3','11_Test_Sofa','dark',-2.18,-2.12,0,.12,1.90,1.96);
+
+  window.SKUMRING_ROOM={version:'Animasjonsrom v2.1',boxes,planes,floorLevel:0,units:'meters'};
 })();
