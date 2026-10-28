@@ -75,30 +75,37 @@
   span('Door_handle_mount',door,'brass',-2.92,-2.89,1.0,1.12,-.34,-.29);
   span('Door_handle',door,'brass',-2.89,-2.82,1.045,1.075,-.41,-.30);
 
-  // Animation area: 3m x 3m. Lines sit directly above floor, unobstructed centre.
-  span('Anim_zone_rear','09_Animation_Zone','edge',-1.5,1.5,0,.008,-1.25,-1.19);
-  span('Anim_zone_front','09_Animation_Zone','edge',-1.5,1.5,0,.008,1.75,1.81);
-  span('Anim_zone_left','09_Animation_Zone','edge',-1.5,-1.44,0,.008,-1.25,1.81);
-  span('Anim_zone_right','09_Animation_Zone','edge',1.44,1.5,0,.008,-1.25,1.81);
-  span('Anim_zone_mid_x','09_Animation_Zone',[96,112,92],-.015,.015,0,.007,-1.25,1.81);
-  span('Anim_zone_mid_z','09_Animation_Zone',[96,112,92],-1.5,1.5,0,.007,.25,.31);
 
-  // Flat floor markers for Ava and Victoria; not full-size character replacements.
-  span('Start_Ava_base','10_Start_Markers',[88,132,114],-.95,-.43,0,.012,.02,.54);
-  span('Start_Ava_core','10_Start_Markers',[128,168,149],-.84,-.54,.012,.018,.13,.43);
-  span('Start_Victoria_base','10_Start_Markers',[142,87,83],.43,.95,0,.012,.02,.54);
-  span('Start_Victoria_core','10_Start_Markers',[184,118,113],.54,.84,.012,.018,.13,.43);
-
-  // Compact test sofa: left wall; feet rest on the floor; centre animation zone clear.
-  span('Sofa_body','11_Test_Sofa',[66,98,81],-2.72,-2.08,.12,.36,.72,2.02);
-  span('Sofa_left_arm','11_Test_Sofa',[58,86,72],-2.72,-2.08,.12,.56,.72,.90);
-  span('Sofa_right_arm','11_Test_Sofa',[58,86,72],-2.72,-2.08,.12,.56,1.84,2.02);
-  span('Sofa_back','11_Test_Sofa',[53,79,66],-2.72,-2.56,.36,.86,.72,2.02);
-  span('Sofa_seat_split','11_Test_Sofa',[73,108,89],-2.50,-2.10,.34,.39,.74,2.00);
-  span('Sofa_leg_0','11_Test_Sofa','dark',-2.68,-2.62,0,.12,.78,.84);
-  span('Sofa_leg_1','11_Test_Sofa','dark',-2.18,-2.12,0,.12,.78,.84);
-  span('Sofa_leg_2','11_Test_Sofa','dark',-2.68,-2.62,0,.12,1.90,1.96);
-  span('Sofa_leg_3','11_Test_Sofa','dark',-2.18,-2.12,0,.12,1.90,1.96);
-
-  window.SKUMRING_ROOM={version:'Animasjonsrom v2.1',boxes,planes,floorLevel:0,units:'meters'};
+  // Widen the architecture by 50% and deepen by 40% (about double area).
+  for(const b of boxes){b.lo[0]*=1.5;b.hi[0]*=1.5;b.lo[2]*=1.4;b.hi[2]*=1.4;}
+  for(const p of planes)p.p=p.p.map(v=>[v[0]*1.5,v[1],v[2]*1.4]);
+  // Wide floor-level walk and run area; furniture remains outside these bounds.
+  const path='09_Walk_Run_Zone';
+  for(const [id,a,b,c,d] of [
+    ['back',-2.85,2.85,-1.20,-1.16],['front',-2.85,2.85,3.16,3.20],
+    ['left',-2.85,-2.81,-1.20,3.20],['right',2.81,2.85,-1.20,3.20]]){
+    span('Zone_'+id,path,[159,136,89],a,b,.004,.013,c,d);
+  }
+  for(let i=0;i<8;i++)span('Walking_lane_'+i,'09_Movement_Path',[91,106,97],-.018,.018,.004,.009,-.95+i*.51,-.67+i*.51);
+  const spawns=[['Ava',-1.70,[77,139,117]],['Victoria',0,[150,91,78]],['Karakter_3',1.70,[104,128,171]]];
+  for(const [n,x,c] of spawns){
+    span('Start_'+n,'10_Character_Spawns',c,x-.235,x+.235,.006,.016,.35,.82);
+    span('Centre_'+n,'10_Character_Spawns',[202,203,187],x-.13,x+.13,.016,.021,.46,.71);
+    span('Forward_'+n,'10_Character_Spawns',c,x-.055,x+.055,.006,.017,.10,.35);
+  }
+  // Bed, 2.04m x 1.67m; mattress at 0.61m, with clear stand-up space along its left side.
+  const bd='11_Bed_For_Lying_Animations';
+  span('Bed_frame',bd,'dark',2.12,4.16,.16,.32,-3.06,-1.39);
+  for(const x of [2.23,4.02])for(const z of [-2.94,-1.50])span('Bed_leg',bd,'wood',x-.06,x+.06,0,.18,z-.06,z+.06);
+  span('Bed_mattress',bd,[162,157,140],2.18,4.10,.32,.61,-3.02,-1.43);
+  span('Bed_duvet',bd,[83,106,88],2.19,4.09,.614,.632,-2.24,-1.44);
+  span('Bed_pillow_1',bd,[204,193,174],2.33,2.99,.61,.725,-2.94,-2.56);
+  span('Bed_pillow_2',bd,[204,193,174],3.26,3.93,.61,.725,-2.94,-2.56);
+  span('Bed_headboard',bd,'wood',2.10,4.17,.15,1.04,-3.24,-3.06);
+  // Chair at left rear, away from door and 5.7 x 4.4m walk zone.
+  const ch='12_Sitting_Animation_Chair';
+  for(const x of [-3.93,-3.33])for(const z of [-2.96,-2.38])span('Chair_leg',ch,'wood',x-.045,x+.045,0,.45,z-.045,z+.045);
+  span('Chair_seat',ch,[115,81,59],-3.99,-3.27,.44,.50,-3.02,-2.32);
+  span('Chair_back',ch,'wood',-4.00,-3.26,.50,1.14,-3.075,-2.985);
+  window.SKUMRING_ROOM={version:'Animasjonsrom v3.0',boxes,planes,floorLevel:0,units:'meters',dimensions:[9,7,2.96],spawns:spawns.map(([name,x])=>({name,x,y:0,z:.59}))};
 })();
