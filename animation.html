@@ -18,9 +18,9 @@
 <label class="pair wide"><input id="walls" type="checkbox" checked> Vis veggene</label>
 <div class="flexrow wide"><button id="camfront">Forfra</button><button id="camangle">Skrått</button><button id="camtops">Ovenfra</button></div>
 <div id="clipstatus" class="wide">Venter på modellen.</div>
-<div class="hint wide"><b>Merk:</b> Dette er en visuell test i rommet, ikke kollisjonssystem eller Unreal Animation Blueprint. Animasjoner med fremdrift kan føre figuren ut av testfeltet. Standard er derfor gange/løp på stedet.</div>
+<div class="hint wide"><b>Merk:</b> Dette er en visuell test i rommet, ikke kollisjonssystem eller Unreal Animation Blueprint. Det nye rommet er 9 × 7 meter og gir bedre plass til fremdrift. Animasjoner med fremdrift kan fortsatt føre figuren gjennom vegger; dette er ikke en kollisjonssimulering.</div>
 </aside></div><footer>Dra i 3D-rommet for å rotere kameraet · musehjulet zoomer · 30 FPS-grense for mindre PC-belastning. Dersom lokal lagring støttes, blir modellen liggende også etter F5.</footer>
-<script src="room-v2.js?v=2.1"></script><script>
+<script src="room-v2.js?v=3.0"></script><script>
 /* Skumring local-only ZIP/GLB loader. Model bytes never leave the browser. */
 (function () {
   'use strict';
@@ -169,7 +169,7 @@ async function init3D(){
   renderer.outputColorSpace=THREE.SRGBColorSpace;
   scene=new THREE.Scene();scene.background=new THREE.Color(0x142019);
   camera=new THREE.PerspectiveCamera(47,1,.06,65);
-  camera.position.set(0,2.5,7.4);
+  camera.position.set(0,3.2,10.3);
   orbit=new OrbitControls(camera,renderer.domElement);
   orbit.target.set(0,1.15,0);orbit.enableDamping=true;orbit.dampingFactor=.08;
   orbit.minDistance=.75;orbit.maxDistance=19;orbit.maxPolarAngle=Math.PI-.07;
@@ -224,9 +224,9 @@ function toggleWalls(){
  }dirty=true;
 }
 function setCamera(view){if(!camera)return;
- if(view==='front'){camera.position.set(0,2.45,7.4);orbit.target.set(0,1.15,0)}
- if(view==='angle'){camera.position.set(4.9,3.0,5.9);orbit.target.set(0,1.12,0)}
- if(view==='top'){camera.position.set(.001,8.5,2);orbit.target.set(0,.1,0)}
+ if(view==='front'){camera.position.set(0,2.6,10.1);orbit.target.set(0,1.15,0)}
+ if(view==='angle'){camera.position.set(6.8,3.6,8.4);orbit.target.set(0,1.12,0)}
+ if(view==='top'){camera.position.set(.001,12.5,2);orbit.target.set(0,.1,0)}
  orbit.update();dirty=true;}
 function totalDuration(){if(!info)return 1;return $('mode').value==='demo'?2*info.dw+info.dt+3*info.dr:$('mode').value==='walk'?4*info.dw:$('mode').value==='run'?5*info.dr:info.dt;}
 function animationPlan(time){
@@ -250,7 +250,7 @@ function pose(){if(!info||!model)return;
  active.time=Math.min(plan.local,clip.duration);active.enabled=true;active.setEffectiveWeight(1);mixer.update(0);
  const [x,y,z]=chosenSpawn();model.position.set(x,y+baseHeight,z+plan.offset);
  if($('forward').checked){const rootZ=root?.position.z||0;const pos=z+plan.offset+rootZ;
-  if(Math.abs(pos) > 1.6)detail.textContent='OBS: Figuren er utenfor den åpne testflaten.\n'+plan.name+'\nBruk «På stedet» for å bli inne i rommet.';
+  if(Math.abs(pos) > 2.7)detail.textContent='OBS: Figuren er utenfor den åpne testflaten.\n'+plan.name+'\nBruk «På stedet» for å bli inne i rommet.';
   else detail.textContent=plan.label+'\n'+plan.name;
  }else detail.textContent=plan.label+'\n'+plan.name;
  $('timeline').value=String(elapsed);$('timeLabel').textContent=elapsed.toFixed(2).replace('.',',')+' / '+totalDuration().toFixed(2).replace('.',',')+' s';
